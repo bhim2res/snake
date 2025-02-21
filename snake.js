@@ -10,22 +10,26 @@ const downButton = document.getElementById('down');
 const leftButton = document.getElementById('left');
 const rightButton = document.getElementById('right');
 
+// Set canvas size dynamically
+canvas.width = canvas.offsetWidth;
+canvas.height = canvas.offsetHeight;
+
 // Game constants
 const gridSize = 20; // 20x20 grid
-const tileSize = canvas.width / gridSize; // 20px per tile
+const tileSize = canvas.width / gridSize; // Dynamic tile size
 
 // Game variables
-let snake = [{x: 10, y: 10}]; // Snake starts in the middle
-let direction = 'right'; // Initial direction
-let food = generateFood(); // Initial food position
-let score = 0; // Starting score
-let gameInterval; // To control the game loop
+let snake = [{x: 10, y: 10}];
+let direction = 'right';
+let food = generateFood();
+let score = 0;
+let gameInterval;
 
 // Touch variables
 let touchStartX = 0;
 let touchStartY = 0;
 
-// Generate random food position not on the snake
+// Generate random food position
 function generateFood() {
     let food;
     do {
@@ -37,7 +41,7 @@ function generateFood() {
     return food;
 }
 
-// Unified direction change function
+// Unified direction change
 function changeDirection(newDirection) {
     if (newDirection === 'right' && direction !== 'left') {
         direction = 'right';
@@ -50,7 +54,7 @@ function changeDirection(newDirection) {
     }
 }
 
-// Handle arrow key presses
+// Handle keyboard input
 function handleKeyPress(event) {
     const key = event.key;
     if (['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown'].includes(key)) {
@@ -70,7 +74,7 @@ function handleTouchStart(event) {
     touchStartY = touch.clientY;
 }
 
-// Handle touch move and end
+// Handle touch end
 function handleTouchEnd(event) {
     event.preventDefault();
     const touch = event.changedTouches[0];
@@ -120,15 +124,19 @@ function gameLoop() {
     drawGame();
 }
 
-// Draw snake and food on the canvas
+// Draw game with emojis
 function drawGame() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    snake.forEach(segment => {
-        ctx.fillStyle = 'green';
-        ctx.fillRect(segment.x * tileSize, segment.y * tileSize, tileSize, tileSize);
+    snake.forEach((segment, index) => {
+        ctx.font = `${tileSize}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const x = segment.x * tileSize + tileSize / 2;
+        const y = segment.y * tileSize + tileSize / 2;
+        ctx.fillText(index === 0 ? '🐍' : '🟢', x, y);
     });
-    ctx.fillStyle = 'red';
-    ctx.fillRect(food.x * tileSize, food.y * tileSize, tileSize, tileSize);
+    ctx.font = `${tileSize}px Arial`;
+    ctx.fillText('🍎', food.x * tileSize + tileSize / 2, food.y * tileSize + tileSize / 2);
 }
 
 // Handle game over
@@ -138,7 +146,7 @@ function gameOver() {
     gameOverDisplay.style.display = 'block';
 }
 
-// Initialize or reset the game
+// Initialize or reset game
 function init() {
     snake = [{x: 10, y: 10}];
     direction = 'right';
@@ -148,17 +156,17 @@ function init() {
     gameOverDisplay.style.display = 'none';
 }
 
-// Restart the game
+// Restart game
 function restartGame() {
     init();
-    gameInterval = setInterval(gameLoop, 100);
+    gameInterval = setInterval(gameLoop, 100); // 100ms for consistent speed
 }
 
 // Set up event listeners
 document.addEventListener('keydown', handleKeyPress);
-canvas.addEventListener('touchstart', handleTouchStart);
-canvas.addEventListener('touchmove', () => {});
-canvas.addEventListener('touchend', handleTouchEnd);
+canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+canvas.addEventListener('touchmove', () => {}, { passive: false });
+canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
 upButton.addEventListener('click', () => changeDirection('up'));
 downButton.addEventListener('click', () => changeDirection('down'));
 leftButton.addEventListener('click', () => changeDirection('left'));

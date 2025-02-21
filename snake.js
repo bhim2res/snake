@@ -4,8 +4,10 @@ const scoreDisplay = document.getElementById('score');
 const gameOverDisplay = document.getElementById('gameOver');
 const finalScoreDisplay = document.getElementById('finalScore');
 const restartButton = document.getElementById('restart');
-const controller = document.getElementById('controller');
-const thumb = document.getElementById('thumb');
+const upButton = document.getElementById('up');
+const downButton = document.getElementById('down');
+const leftButton = document.getElementById('left');
+const rightButton = document.getElementById('right');
 const bgMusic = document.getElementById('bgMusic');
 const muteButton = document.getElementById('muteButton');
 
@@ -30,66 +32,27 @@ function generateFood() {
     return food;
 }
 
+// Keyboard controls
 document.addEventListener('keydown', (event) => {
     const key = event.key;
-    if (key === 'ArrowRight' && direction !== 'left') {
-        direction = 'right';
-    } else if (key === 'ArrowLeft' && direction !== 'right') {
-        direction = 'left';
-    } else if (key === 'ArrowUp' && direction !== 'down') {
-        direction = 'up';
-    } else if (key === 'ArrowDown' && direction !== 'up') {
-        direction = 'down';
-    }
+    if (key === 'ArrowRight' && direction !== 'left') direction = 'right';
+    else if (key === 'ArrowLeft' && direction !== 'right') direction = 'left';
+    else if (key === 'ArrowUp' && direction !== 'down') direction = 'up';
+    else if (key === 'ArrowDown' && direction !== 'up') direction = 'down';
 });
 
-controller.addEventListener('touchstart', (event) => {
-    event.preventDefault();
-    const touch = event.touches[0];
-    const rect = controller.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    const dx = touch.clientX - centerX;
-    const dy = touch.clientY - centerY;
-    thumb.style.left = `${dx}px`;
-    thumb.style.top = `${dy}px`;
-}, { passive: false });
-
-controller.addEventListener('touchmove', (event) => {
-    event.preventDefault();
-    const touch = event.touches[0];
-    const rect = controller.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    const dx = touch.clientX - centerX;
-    const dy = touch.clientY - centerY;
-    let angle = Math.atan2(dy, dx) * (180 / Math.PI);
-    if (angle < 0) angle += 360;
-    let newDirection;
-    if (angle >= 315 || angle < 45) {
-        newDirection = 'right';
-    } else if (angle >= 45 && angle < 135) {
-        newDirection = 'up';
-    } else if (angle >= 135 && angle < 225) {
-        newDirection = 'left';
-    } else {
-        newDirection = 'down';
-    }
-    if (
-        (newDirection === 'right' && direction !== 'left') ||
-        (newDirection === 'left' && direction !== 'right') ||
-        (newDirection === 'up' && direction !== 'down') ||
-        (newDirection === 'down' && direction !== 'up')
-    ) {
-        direction = newDirection;
-    }
-    thumb.style.left = `${dx}px`;
-    thumb.style.top = `${dy}px`;
-}, { passive: false });
-
-controller.addEventListener('touchend', () => {
-    thumb.style.left = '0';
-    thumb.style.top = '0';
+// Button controls
+upButton.addEventListener('click', () => {
+    if (direction !== 'down') direction = 'up';
+});
+downButton.addEventListener('click', () => {
+    if (direction !== 'up') direction = 'down';
+});
+leftButton.addEventListener('click', () => {
+    if (direction !== 'right') direction = 'left';
+});
+rightButton.addEventListener('click', () => {
+    if (direction !== 'left') direction = 'right';
 });
 
 function gameLoop() {
@@ -155,9 +118,7 @@ function init() {
     gameInterval = setInterval(gameLoop, 100);
 }
 
-restartButton.addEventListener('click', () => {
-    init();
-});
+restartButton.addEventListener('click', init);
 
 muteButton.addEventListener('click', () => {
     isMuted = !isMuted;

@@ -20,6 +20,8 @@ let food = generateFood();
 let score = 0;
 let gameInterval;
 let isMuted = false;
+let baseSpeed = 150; // Slower initial speed (150ms per move)
+let currentSpeed = baseSpeed;
 
 function generateFood() {
     let food;
@@ -55,6 +57,13 @@ rightButton.addEventListener('click', () => {
     if (direction !== 'left') direction = 'right';
 });
 
+function updateSpeed() {
+    clearInterval(gameInterval);
+    const level = Math.floor(score / 5); // Increase level every 5 points
+    currentSpeed = Math.max(50, baseSpeed - level * 20); // Decrease interval by 20ms per level, min 50ms
+    gameInterval = setInterval(gameLoop, currentSpeed);
+}
+
 function gameLoop() {
     let head = { ...snake[0] };
     if (direction === 'right') head.x += 1;
@@ -77,6 +86,7 @@ function gameLoop() {
         food = generateFood();
         score += 1;
         scoreDisplay.textContent = `Score: ${score}`;
+        updateSpeed(); // Adjust speed when score increases
     } else {
         snake.unshift(head);
         snake.pop();
@@ -93,9 +103,9 @@ function drawGame() {
         ctx.textBaseline = 'middle';
         const x = segment.x * tileSize + tileSize / 2;
         const y = segment.y * tileSize + tileSize / 2;
-        ctx.fillText(index === 0 ? '🐍' : '🟢', x, y);
+        ctx.fillText(index === 0 ? '🐍' : '🐸', x, y); // Head: snake, Tail: green frog
     });
-    ctx.fillText('🍎', food.x * tileSize + tileSize / 2, food.y * tileSize + tileSize / 2);
+    ctx.fillText('🐞', food.x * tileSize + tileSize / 2, food.y * tileSize + tileSize / 2); // Food: red ladybug
 }
 
 function gameOver() {
@@ -112,10 +122,11 @@ function init() {
     score = 0;
     scoreDisplay.textContent = `Score: ${score}`;
     gameOverDisplay.style.display = 'none';
+    currentSpeed = baseSpeed;
     bgMusic.play().catch(() => {
         document.addEventListener('click', () => bgMusic.play(), { once: true });
     });
-    gameInterval = setInterval(gameLoop, 100);
+    gameInterval = setInterval(gameLoop, currentSpeed);
 }
 
 restartButton.addEventListener('click', init);

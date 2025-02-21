@@ -17,7 +17,7 @@ body {
 #gameCanvas {
     border: 1px solid black;
     background-color: white;
-    width: 90vw; /* Responsive width */
+    width: 90vw;
     max-width: 400px;
     height: 90vw;
     max-height: 400px;
@@ -30,23 +30,23 @@ body {
 
 #controls {
     display: grid;
-    grid-template-columns: repeat(3, 100px); /* Larger columns */
-    grid-template-rows: repeat(2, 100px);    /* Larger rows */
-    gap: 15px; /* More spacing */
+    grid-template-columns: repeat(3, 100px);
+    grid-template-rows: repeat(2, 100px);
+    gap: 15px;
     margin-top: 20px;
     justify-content: center;
     width: 100%;
-    max-width: 400px; /* Match canvas width */
+    max-width: 400px;
 }
 
 button {
-    font-size: 32px; /* Larger icons */
+    font-size: 32px;
     background-color: #4CAF50;
     color: white;
     border: none;
     border-radius: 10px;
     cursor: pointer;
-    width: 100px; /* Larger buttons */
+    width: 100px;
     height: 100px;
     display: flex;
     justify-content: center;
@@ -57,13 +57,11 @@ button:hover, button:active {
     background-color: #45a049;
 }
 
-/* Position buttons in the grid */
 #up    { grid-column: 2; grid-row: 1; }
 #left  { grid-column: 1; grid-row: 2; }
 #right { grid-column: 3; grid-row: 2; }
 #down  { grid-column: 2; grid-row: 2; }
 
-/* Responsive adjustments for smaller screens */
 @media (max-width: 500px) {
     #controls {
         grid-template-columns: repeat(3, 80px);

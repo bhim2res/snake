@@ -1,35 +1,24 @@
-// Get HTML elements
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const scoreDisplay = document.getElementById('score');
 const gameOverDisplay = document.getElementById('gameOver');
-const restartButton = document.getElementById('restart');
 const finalScoreDisplay = document.getElementById('finalScore');
-const upButton = document.getElementById('up');
-const downButton = document.getElementById('down');
-const leftButton = document.getElementById('left');
-const rightButton = document.getElementById('right');
+const restartButton = document.getElementById('restart');
+const controller = document.getElementById('controller');
+const thumb = document.getElementById('thumb');
+const bgMusic = document.getElementById('bgMusic');
+const muteButton = document.getElementById('muteButton');
 
-// Set canvas size dynamically
-canvas.width = canvas.offsetWidth;
-canvas.height = canvas.offsetHeight;
+const gridSize = 20;
+const tileSize = canvas.width / gridSize;
 
-// Game constants
-const gridSize = 20; // 20x20 grid
-const tileSize = canvas.width / gridSize; // Dynamic tile size
-
-// Game variables
 let snake = [{x: 10, y: 10}];
 let direction = 'right';
 let food = generateFood();
 let score = 0;
 let gameInterval;
+let isMuted = false;
 
-// Touch variables
-let touchStartX = 0;
-let touchStartY = 0;
-
-// Generate random food position
 function generateFood() {
     let food;
     do {
@@ -41,59 +30,68 @@ function generateFood() {
     return food;
 }
 
-// Unified direction change
-function changeDirection(newDirection) {
-    if (newDirection === 'right' && direction !== 'left') {
+document.addEventListener('keydown', (event) => {
+    const key = event.key;
+    if (key === 'ArrowRight' && direction !== 'left') {
         direction = 'right';
-    } else if (newDirection === 'left' && direction !== 'right') {
+    } else if (key === 'ArrowLeft' && direction !== 'right') {
         direction = 'left';
-    } else if (newDirection === 'up' && direction !== 'down') {
+    } else if (key === 'ArrowUp' && direction !== 'down') {
         direction = 'up';
-    } else if (newDirection === 'down' && direction !== 'up') {
+    } else if (key === 'ArrowDown' && direction !== 'up') {
         direction = 'down';
     }
-}
+});
 
-// Handle keyboard input
-function handleKeyPress(event) {
-    const key = event.key;
-    if (['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown'].includes(key)) {
-        event.preventDefault();
-    }
-    if (key === 'ArrowRight') changeDirection('right');
-    else if (key === 'ArrowLeft') changeDirection('left');
-    else if (key === 'ArrowUp') changeDirection('up');
-    else if (key === 'ArrowDown') changeDirection('down');
-}
-
-// Handle touch start
-function handleTouchStart(event) {
+controller.addEventListener('touchstart', (event) => {
     event.preventDefault();
     const touch = event.touches[0];
-    touchStartX = touch.clientX;
-    touchStartY = touch.clientY;
-}
+    const rect = controller.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const dx = touch.clientX - centerX;
+    const dy = touch.clientY - centerY;
+    thumb.style.left = `${dx}px`;
+    thumb.style.top = `${dy}px`;
+}, { passive: false });
 
-// Handle touch end
-function handleTouchEnd(event) {
+controller.addEventListener('touchmove', (event) => {
     event.preventDefault();
-    const touch = event.changedTouches[0];
-    const touchEndX = touch.clientX;
-    const touchEndY = touch.clientY;
-
-    const deltaX = touchEndX - touchStartX;
-    const deltaY = touchEndY - touchStartY;
-
-    if (Math.abs(deltaX) > Math.abs(deltaY)) {
-        if (deltaX > 20) changeDirection('right');
-        else if (deltaX < -20) changeDirection('left');
+    const touch = event.touches[0];
+    const rect = controller.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const dx = touch.clientX - centerX;
+    const dy = touch.clientY - centerY;
+    let angle = Math.atan2(dy, dx) * (180 / Math.PI);
+    if (angle < 0) angle += 360;
+    let newDirection;
+    if (angle >= 315 || angle < 45) {
+        newDirection = 'right';
+    } else if (angle >= 45 && angle < 135) {
+        newDirection = 'up';
+    } else if (angle >= 135 && angle < 225) {
+        newDirection = 'left';
     } else {
-        if (deltaY > 20) changeDirection('down');
-        else if (deltaY < -20) changeDirection('up');
+        newDirection = 'down';
     }
-}
+    if (
+        (newDirection === 'right' && direction !== 'left') ||
+        (newDirection === 'left' && direction !== 'right') ||
+        (newDirection === 'up' && direction !== 'down') ||
+        (newDirection === 'down' && direction !== 'up')
+    ) {
+        direction = newDirection;
+    }
+    thumb.style.left = `${dx}px`;
+    thumb.style.top = `${dy}px`;
+}, { passive: false });
 
-// Main game loop
+controller.addEventListener('touchend', () => {
+    thumb.style.left = '0';
+    thumb.style.top = '0';
+});
+
 function gameLoop() {
     let head = { ...snake[0] };
     if (direction === 'right') head.x += 1;
@@ -124,7 +122,6 @@ function gameLoop() {
     drawGame();
 }
 
-// Draw game with emojis
 function drawGame() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     snake.forEach((segment, index) => {
@@ -135,18 +132,16 @@ function drawGame() {
         const y = segment.y * tileSize + tileSize / 2;
         ctx.fillText(index === 0 ? '🐍' : '🟢', x, y);
     });
-    ctx.font = `${tileSize}px Arial`;
     ctx.fillText('🍎', food.x * tileSize + tileSize / 2, food.y * tileSize + tileSize / 2);
 }
 
-// Handle game over
 function gameOver() {
     clearInterval(gameInterval);
     finalScoreDisplay.textContent = `Score: ${score}`;
     gameOverDisplay.style.display = 'block';
+    bgMusic.pause();
 }
 
-// Initialize or reset game
 function init() {
     snake = [{x: 10, y: 10}];
     direction = 'right';
@@ -154,25 +149,20 @@ function init() {
     score = 0;
     scoreDisplay.textContent = `Score: ${score}`;
     gameOverDisplay.style.display = 'none';
+    bgMusic.play().catch(() => {
+        document.addEventListener('click', () => bgMusic.play(), { once: true });
+    });
+    gameInterval = setInterval(gameLoop, 100);
 }
 
-// Restart game
-function restartGame() {
+restartButton.addEventListener('click', () => {
     init();
-    gameInterval = setInterval(gameLoop, 100); // 100ms for consistent speed
-}
+});
 
-// Set up event listeners
-document.addEventListener('keydown', handleKeyPress);
-canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
-canvas.addEventListener('touchmove', () => {}, { passive: false });
-canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
-upButton.addEventListener('click', () => changeDirection('up'));
-downButton.addEventListener('click', () => changeDirection('down'));
-leftButton.addEventListener('click', () => changeDirection('left'));
-rightButton.addEventListener('click', () => changeDirection('right'));
-restartButton.addEventListener('click', restartGame);
+muteButton.addEventListener('click', () => {
+    isMuted = !isMuted;
+    bgMusic.muted = isMuted;
+    muteButton.textContent = isMuted ? '🔇' : '🔊';
+});
 
-// Start the game
 init();
-gameInterval = setInterval(gameLoop, 100);

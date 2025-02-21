@@ -5,6 +5,10 @@ const scoreDisplay = document.getElementById('score');
 const gameOverDisplay = document.getElementById('gameOver');
 const restartButton = document.getElementById('restart');
 const finalScoreDisplay = document.getElementById('finalScore');
+const upButton = document.getElementById('up');
+const downButton = document.getElementById('down');
+const leftButton = document.getElementById('left');
+const rightButton = document.getElementById('right');
 
 // Game constants
 const gridSize = 20; // 20x20 grid
@@ -33,26 +37,34 @@ function generateFood() {
     return food;
 }
 
+// Unified direction change function
+function changeDirection(newDirection) {
+    if (newDirection === 'right' && direction !== 'left') {
+        direction = 'right';
+    } else if (newDirection === 'left' && direction !== 'right') {
+        direction = 'left';
+    } else if (newDirection === 'up' && direction !== 'down') {
+        direction = 'up';
+    } else if (newDirection === 'down' && direction !== 'up') {
+        direction = 'down';
+    }
+}
+
 // Handle arrow key presses
 function handleKeyPress(event) {
     const key = event.key;
     if (['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown'].includes(key)) {
         event.preventDefault();
     }
-    if (key === 'ArrowRight' && direction !== 'left') {
-        direction = 'right';
-    } else if (key === 'ArrowLeft' && direction !== 'right') {
-        direction = 'left';
-    } else if (key === 'ArrowUp' && direction !== 'down') {
-        direction = 'up';
-    } else if (key === 'ArrowDown' && direction !== 'up') {
-        direction = 'down';
-    }
+    if (key === 'ArrowRight') changeDirection('right');
+    else if (key === 'ArrowLeft') changeDirection('left');
+    else if (key === 'ArrowUp') changeDirection('up');
+    else if (key === 'ArrowDown') changeDirection('down');
 }
 
 // Handle touch start
 function handleTouchStart(event) {
-    event.preventDefault(); // Prevent scrolling
+    event.preventDefault();
     const touch = event.touches[0];
     touchStartX = touch.clientX;
     touchStartY = touch.clientY;
@@ -68,21 +80,12 @@ function handleTouchEnd(event) {
     const deltaX = touchEndX - touchStartX;
     const deltaY = touchEndY - touchStartY;
 
-    // Determine swipe direction based on the larger movement
     if (Math.abs(deltaX) > Math.abs(deltaY)) {
-        // Horizontal swipe
-        if (deltaX > 20 && direction !== 'left') { // Swipe right
-            direction = 'right';
-        } else if (deltaX < -20 && direction !== 'right') { // Swipe left
-            direction = 'left';
-        }
+        if (deltaX > 20) changeDirection('right');
+        else if (deltaX < -20) changeDirection('left');
     } else {
-        // Vertical swipe
-        if (deltaY > 20 && direction !== 'up') { // Swipe down
-            direction = 'down';
-        } else if (deltaY < -20 && direction !== 'down') { // Swipe up
-            direction = 'up';
-        }
+        if (deltaY > 20) changeDirection('down');
+        else if (deltaY < -20) changeDirection('up');
     }
 }
 
@@ -154,8 +157,12 @@ function restartGame() {
 // Set up event listeners
 document.addEventListener('keydown', handleKeyPress);
 canvas.addEventListener('touchstart', handleTouchStart);
-canvas.addEventListener('touchmove', () => {}); // Required for some browsers
+canvas.addEventListener('touchmove', () => {});
 canvas.addEventListener('touchend', handleTouchEnd);
+upButton.addEventListener('click', () => changeDirection('up'));
+downButton.addEventListener('click', () => changeDirection('down'));
+leftButton.addEventListener('click', () => changeDirection('left'));
+rightButton.addEventListener('click', () => changeDirection('right'));
 restartButton.addEventListener('click', restartGame);
 
 // Start the game
